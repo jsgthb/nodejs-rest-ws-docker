@@ -1,0 +1,13 @@
+version: '3.7'
+services:
+  mongodb:
+    container_name: express-api-mongo
+    image: mongo:latest
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASS}
+    ports:
+      - ${MONGODB_PORT}:27017 
+    volumes:
+      - ./mongodb:/data/db
