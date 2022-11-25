@@ -1,15 +1,17 @@
 const express = require('express')
 const app = express()
 const mongoose = require("mongoose")
-const db = require("./config/db")
+const db = require("./src/config/db")
+const userRoutes = require("./src/routes/userRoutes");
 const port = process.env.NODE_PORT || 8080
 
 // Connect to database
 db.connect()
 
-app.get('/', (req, res) => {
-    res.send("Hello World!")
-})
+// Routes
+app.use("/users", userRoutes);
+// Redirect invalid endpoints
+app.all("*", function(req, res) {res.status(404).json({message: "Endpoint not found"})})
 
 // Wait for database connection
 mongoose.connection.once("open", () => {
