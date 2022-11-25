@@ -9,6 +9,8 @@ const port = process.env.NODE_PORT || 8080
 // Connect to database
 db.connect()
 
+// JSON middleware
+app.use(express.json())
 // Routes
 app.use("/users", userRoutes);
 // Redirect invalid endpoints
