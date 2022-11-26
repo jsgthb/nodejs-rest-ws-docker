@@ -5,10 +5,10 @@ const authController = require("../controllers/authController")
 const usersController = require("../controllers/usersController")
 
 // Register route
-router.get("/register", authController.userRegister)
+router.post("/register", authController.userRegister)
 
 // Login route
-router.get("/login", authController.userLogin)
+router.post("/login", authController.userLogin)
 
 // Display usernames route
 router.get("/", usersController.displayUsernames)
