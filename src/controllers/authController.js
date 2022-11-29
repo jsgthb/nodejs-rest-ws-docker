@@ -1,6 +1,8 @@
 const User = require("../model/User")
 const argon2 = require("argon2")
 const jwt = require("jsonwebtoken")
+const fs = require('fs'); 
+const privateKey = fs.readFileSync(process.env.NODE_ACCESS_KEY_SECRET)
 
 exports.userLogin = async (req, res) => {
     // Check if request body is valid
@@ -13,8 +15,7 @@ exports.userLogin = async (req, res) => {
     const validate = await argon2.verify(user.password, password);
     if (validate) {
         // Generate JWT
-        const tokenSecret = process.env.NODE_ACCESS_TOKEN_SECRET
-        const token = jwt.sign({username: user._id}, tokenSecret, {expiresIn: "1m"})
+        const token = jwt.sign({username: user._id}, privateKey, {algorithm: 'ES256', expiresIn: "1m"})
         return res.status(200).json({message: "Login successful", jwt: token})
     } else {
         return res.status(401).json({message: "Wrong username or password"})

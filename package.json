@@ -4,7 +4,8 @@
   "description": "Simple NodeJS REST WS using Docker",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon -r dotenv/config index.js"
+    "dev": "nodemon -r dotenv/config index.js",
+    "start": "node -r dotenv/config index.js"
   },
   "repository": {
     "type": "git",
