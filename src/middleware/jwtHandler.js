@@ -13,7 +13,6 @@ const verifyToken = (req, res, next) => {
         publicKey,
         (err, decoded) => {
             if (err) {
-                console.log(err)
                 return res.status(403).json({message: "Invalid authorization token"})
             } else {
                 req.user = decoded.username
