@@ -14,9 +14,36 @@ exports.userLogin = async (req, res) => {
     // Compare hash & send response
     const validate = await argon2.verify(user.password, password);
     if (validate) {
-        // Generate JWT
-        const token = jwt.sign({username: user._id}, privateKey, {algorithm: 'ES256', expiresIn: "1m"})
-        return res.status(200).json({message: "Login successful", jwt: token})
+        // Generate authentication & refresh JWT
+        const authToken = jwt.sign(
+            {
+                id: user._id,
+                username: user.username,
+                type: "auth"
+            }, 
+            privateKey, 
+            {
+                algorithm: 'ES256', 
+                expiresIn: "30m"
+            }
+        )
+        const refreshToken = jwt.sign(
+            {
+                id: user._id,
+                username: user.username,
+                type: "refresh"
+            }, 
+            privateKey, 
+            {
+                algorithm: 'ES256',
+                expiresIn: "1y"
+            }
+        )
+        // Store refresh token in database & return tokens
+        await User.updateOne({_id: user._id}, {refreshToken: refreshToken}).exec()
+        // Send refresh token as cookie
+        res.cookie("jwt", refreshToken, { httpOnly: true, maxAge: 12 * 31 * 24 * 60 * 60 * 1000})
+        return res.status(200).json({message: "Login successful", authToken: authToken})
     } else {
         return res.status(401).json({message: "Wrong username or password"})
     }
