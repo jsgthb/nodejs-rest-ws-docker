@@ -2,6 +2,7 @@ const express = require('express')
 const app = express()
 const mongoose = require("mongoose")
 const jwt = require("jsonwebtoken")
+const cookieParser = require("cookie-parser")
 const fs = require('fs'); 
 const db = require("./src/config/db")
 const userRoutes = require("./src/routes/userRoutes");
@@ -13,6 +14,8 @@ db.connect()
 
 // JSON middleware
 app.use(express.json())
+// Cookie parser middleware
+app.use(cookieParser())
 // Routes
 app.use("/users", userRoutes);
 // Redirect invalid endpoints
