@@ -103,3 +103,22 @@ exports.refreshToken = async (req, res) => {
         }
     )
 }
+
+exports.logout = async (req, res) => {
+    // Check if refresh token is set
+    const cookies = req.cookies
+    if (!cookies?.jwt) return res.status(204).json()
+    const refreshToken = cookies.jwt
+    // Check if user exists
+    const user = await User.findOne({refreshToken: refreshToken}).exec()
+    if (!user) {
+        // Remove cookie if user doesn't exist
+        res.clearCookie("jwt", refreshToken, { httpOnly: true, maxAge: 12 * 31 * 24 * 60 * 60 * 1000})
+        return res.status(204).json()
+    }
+    // Delete refresh token in database and client
+    user.refreshToken = null
+    await user.save()
+    res.clearCookie("jwt", refreshToken, { httpOnly: true, maxAge: 12 * 31 * 24 * 60 * 60 * 1000})
+    return res.status(204).json()
+}

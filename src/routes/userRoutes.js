@@ -17,4 +17,7 @@ router.get("/", jwtHandler, usersController.displayUsernames)
 // Display usernames route
 router.post("/refresh", authController.refreshToken)
 
+// Logout route
+router.post("/logout", authController.logout)
+
 module.exports = router
