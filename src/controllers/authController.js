@@ -1,3 +1,4 @@
+require('dotenv').config()
 const User = require("../model/User")
 const argon2 = require("argon2")
 const jwt = require("jsonwebtoken")

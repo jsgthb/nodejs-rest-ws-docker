@@ -1,3 +1,4 @@
+require('dotenv').config()
 const jwt = require("jsonwebtoken")
 const fs = require('fs'); 
 const publicKey = fs.readFileSync(process.env.NODE_ACCESS_KEY_PUBLIC)
