@@ -1,28 +1,13 @@
 require('dotenv').config()
-const express = require('express')
-const app = express()
+const app = require("./src/app")
 const mongoose = require("mongoose")
 const jwt = require("jsonwebtoken")
-const cookieParser = require("cookie-parser")
 const fs = require('fs'); 
 const db = require("./src/config/db")
-const userRoutes = require("./src/routes/userRoutes");
-const errorHandler = require("./src/middleware/errorHandler");
 const port = process.env.NODE_PORT || 8080
 
 // Connect to database
 db.connect()
-
-// JSON middleware
-app.use(express.json())
-// Cookie parser middleware
-app.use(cookieParser())
-// Routes
-app.use("/users", userRoutes);
-// Redirect invalid endpoints
-app.all("*", function(req, res) {res.status(404).json({message: "Endpoint not found"})})
-// General error handler
-app.use(errorHandler)
 
 try {
     // Load privateKey
