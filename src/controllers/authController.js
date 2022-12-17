@@ -1,16 +1,15 @@
-const User = require("../model/User")
+require('dotenv').config()
+const User = require("../services/userService")
 const argon2 = require("argon2")
 const jwt = require("jsonwebtoken")
-const fs = require('fs'); 
-const privateKey = fs.readFileSync(process.env.NODE_ACCESS_KEY_SECRET)
-const publicKey = fs.readFileSync(process.env.NODE_ACCESS_KEY_PUBLIC)
+const { publicKey, privateKey } = require("./../services/keyService")
 
 exports.userLogin = async (req, res) => {
     // Check if request body is valid
     const { username, password } = req.body
     if (!username || !password) return res.status(400).json({message: "Username and password are required"})
     // Check if user exists
-    const user = await User.findOne({username: username}).exec()
+    const user = await User.searchByUsername(username)
     if (!user) return res.status(404).json({message: "User does not exist"})
     // Compare hash & send response
     const validate = await argon2.verify(user.password, password);
@@ -41,7 +40,7 @@ exports.userLogin = async (req, res) => {
             }
         )
         // Store refresh token in database & return tokens
-        await User.updateOne({_id: user._id}, {refreshToken: refreshToken}).exec()
+        await User.updateRefreshToken(user._id, refreshToken)
         // Send refresh token as cookie
         res.cookie("jwt", refreshToken, { httpOnly: true, maxAge: 12 * 31 * 24 * 60 * 60 * 1000})
         return res.status(200).json({message: "Login successful", authToken: authToken})
@@ -55,14 +54,14 @@ exports.userRegister = async (req, res) => {
     const { username, password } = req.body
     if (!username || !password) return res.status(400).json({message: "Username and password are required"})
     // Check if user already exists
-    const duplicate = await User.findOne({username: username}).exec()
+    const duplicate = await User.searchByUsername(username)
     if (duplicate) return res.status(409).json({message: "User already exists"})
     // Create user
     try {
         // Hash password with argon2
         const passwordHash = await argon2.hash(password)
         // Store new user & send response
-        const newUser = await User.create({username: username, password: passwordHash})
+        const newUser = await User.createNew(username, passwordHash)
         res.status(201).json({message: "User successfully created"})
     } catch (error) {
         res.status(500).json({message: error.message})
@@ -75,7 +74,7 @@ exports.refreshToken = async (req, res) => {
     if (!cookies?.jwt) return res.status(401).json({message: "Refresh token required"})
     const refreshToken = cookies.jwt
     // Compare refresh token
-    const user = await User.findOne({refreshToken: refreshToken}).exec()
+    const user = await User.searchByRefreshToken(refreshToken)
     if (!user) return res.status(403).json({message: "Invalid refresh token"})
     // Verify JWT
     jwt.verify(
@@ -110,15 +109,14 @@ exports.logout = async (req, res) => {
     if (!cookies?.jwt) return res.status(204).json()
     const refreshToken = cookies.jwt
     // Check if user exists
-    const user = await User.findOne({refreshToken: refreshToken}).exec()
+    const user = await User.searchByRefreshToken(refreshToken)
     if (!user) {
         // Remove cookie if user doesn't exist
         res.clearCookie("jwt", refreshToken, { httpOnly: true, maxAge: 12 * 31 * 24 * 60 * 60 * 1000})
         return res.status(204).json()
     }
     // Delete refresh token in database and client
-    user.refreshToken = null
-    await user.save()
+    await User.deleteRefreshToken(user._id)
     res.clearCookie("jwt", refreshToken, { httpOnly: true, maxAge: 12 * 31 * 24 * 60 * 60 * 1000})
     return res.status(204).json()
 }
