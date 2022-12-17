@@ -2,9 +2,7 @@ require('dotenv').config()
 const User = require("../services/userService")
 const argon2 = require("argon2")
 const jwt = require("jsonwebtoken")
-const fs = require('fs'); 
-const privateKey = fs.readFileSync(process.env.NODE_ACCESS_KEY_SECRET)
-const publicKey = fs.readFileSync(process.env.NODE_ACCESS_KEY_PUBLIC)
+const { publicKey, privateKey } = require("./../services/keyService")
 
 exports.userLogin = async (req, res) => {
     // Check if request body is valid
